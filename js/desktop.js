@@ -10,8 +10,8 @@ const CONFIG = {
     "1vuSdk2EGjh3eXCXBbT9Qf",
     "3PV4bPPqezu18K45MIOrVY",
     "1K45maA9jDR1kBRpojtPmO",
-    "2aEuA8PSqLa17Y4hKPj5rr",
-  ],
+    "2aEuA8PSqLa17Y4hKPj5rr"
+  ]
 };
 
 class FileSystemManager {
@@ -30,11 +30,11 @@ class FileSystemManager {
               Pictures: {
                 "wallpaper1.webp": { type: "file", content: "/static/wallpapers/wallpaper1.webp" },
                 "wallpaper2.webp": { type: "file", content: "/static/wallpapers/wallpaper2.webp" },
-                "wallpaper3.webp": { type: "file", content: "/static/wallpapers/wallpaper3.webp" },
+                "wallpaper3.webp": { type: "file", content: "/static/wallpapers/wallpaper3.webp" }
               },
-              Music: {},
-            },
-          },
+              Music: {}
+            }
+          }
         };
   }
 
@@ -141,7 +141,7 @@ class ExplorerApp {
       width: "600px",
       left: "100px",
       top: "100px",
-      zIndex: "1000",
+      zIndex: "1000"
     });
 
     win.innerHTML = `
@@ -341,7 +341,7 @@ class ExplorerApp {
     Object.assign(contextMenu.style, {
       left: `${e.pageX}px`,
       top: `${e.pageY}px`,
-      display: "block",
+      display: "block"
     });
   }
 
@@ -382,7 +382,7 @@ class ExplorerApp {
     Object.assign(contextMenu.style, {
       left: `${e.pageX}px`,
       top: `${e.pageY}px`,
-      display: "block",
+      display: "block"
     });
   }
 }
@@ -613,7 +613,7 @@ class TerminalApp {
       `   (|     | )   Architecture: ${cpuArch}`,
       `  /'\\_   _/\\'\\  Resolution: ${resolution}`,
       `  \\___)=(___/   DE: Web Desktop OS`,
-      `               `,
+      `               `
     ];
 
     lines.forEach((line) => this.print(line, "cyan"));
@@ -705,7 +705,7 @@ class TerminalApp {
       neofetch: () => this.cmdNeofetch(),
       ping: () => this.cmdPing(args),
       curl: () => this.cmdCurl(args),
-      ps: () => this.cmdPs(),
+      ps: () => this.cmdPs()
     };
 
     if (commands[command]) {
@@ -960,7 +960,7 @@ class WindowManager {
       left: `${(window.innerWidth - vw) / 2}px`,
       top: `${(window.innerHeight - vh) / 2}px`,
       position: "absolute",
-      zIndex: this.zIndexCounter++,
+      zIndex: this.zIndexCounter++
     });
 
     return win;
@@ -985,7 +985,7 @@ class WindowManager {
       maxWidth: "150px",
       overflow: "hidden",
       textOverflow: "ellipsis",
-      whiteSpace: "nowrap",
+      whiteSpace: "nowrap"
     });
 
     taskbarItem.onclick = () => {
@@ -1040,7 +1040,7 @@ class WindowManager {
         prevWidth: win.style.width,
         prevHeight: win.style.height,
         prevLeft: win.style.left,
-        prevTop: win.style.top,
+        prevTop: win.style.top
       });
 
       const makeFullscreen = () => {
@@ -1048,7 +1048,7 @@ class WindowManager {
           width: "100vw",
           height: "calc(100vh - 40px)",
           left: "0",
-          top: "0",
+          top: "0"
         });
       };
 
@@ -1095,7 +1095,7 @@ class WindowManager {
       position: "absolute",
       right: "0",
       bottom: "0",
-      cursor: "se-resize",
+      cursor: "se-resize"
     });
     win.appendChild(resizer);
 
@@ -1344,7 +1344,7 @@ class DesktopOS {
     document.querySelectorAll(".icon.selectable").forEach((icon) => {
       Object.assign(icon.style, {
         userSelect: "none",
-        webkitUserDrag: "none",
+        webkitUserDrag: "none"
       });
       icon.draggable = false;
 
@@ -1369,7 +1369,10 @@ class DesktopOS {
       terminal: { type: "system", action: () => terminalApp.open() },
       notepad: { type: "system", action: () => notepadApp.open() },
       music: { type: "system", action: () => this.musicPlayer.open(this.wm) },
-      sonic: { type: "swf", swf: "https://raw.githubusercontent.com/Reeyuki/reeyuki.github.io/refs/heads/main/static/sonic.swf" },
+      sonic: {
+        type: "swf",
+        swf: "https://raw.githubusercontent.com/Reeyuki/reeyuki.github.io/refs/heads/main/static/sonic.swf"
+      },
       swarmQueen: { type: "swf", swf: "https://files.catbox.moe/tczjsf.swf" },
       pacman: { type: "game", url: "https://pacman-e281c.firebaseapp.com" },
       pvz: { type: "game", url: "https://emupedia.net/emupedia-game-pvz" },
@@ -1387,14 +1390,14 @@ class DesktopOS {
       fancyPants2: { type: "game", url: "https://www.friv.com/z/games/fancypantsadventure2/game.html" },
       jojo: {
         type: "game",
-        url: "https://www.retrogames.cc/embed/8843-jojos-bizarre-adventure%3A-heritage-for-the-future-jojo-no-kimyou-na-bouken%3A-mirai-e-no-isan-japan-990927-no-cd.html",
+        url: "https://www.retrogames.cc/embed/8843-jojos-bizarre-adventure%3A-heritage-for-the-future-jojo-no-kimyou-na-bouken%3A-mirai-e-no-isan-japan-990927-no-cd.html"
       },
       pokemonRed: { type: "game", url: "https://gamesfrog.com/games/gb/pokemon-red/iframe" },
       pokemonEmerald: { type: "game", url: "https://gamesfrog.com/games/gba/pokemon-emerald-version/iframe" },
       pokemonRuby: { type: "game", url: "https://gamesfrog.com/games/gba/pokemon-ruby2/iframe" },
       pokemonPlatinum: { type: "game", url: "https://gamesfrog.com/games/nds/pokemon-platinum-version/iframe" },
       pokemonSapphire: { type: "game", url: "https://gamesfrog.com/games/gba/pokemon-mega-power" },
-      pokemonDark: { type: "game", url: "https://gamesfrog.com/games/gba/pokemon-dark-violet/iframe" },
+      pokemonDark: { type: "game", url: "https://gamesfrog.com/games/gba/pokemon-dark-violet/iframe" }
     };
 
     const info = appMap[app];
@@ -1490,7 +1493,7 @@ class DesktopOS {
     Object.assign(this.contextMenu.style, {
       left: `${e.pageX}px`,
       top: `${e.pageY}px`,
-      display: "block",
+      display: "block"
     });
   }
 
@@ -1509,7 +1512,7 @@ class DesktopOS {
         top: `${startY}px`,
         width: "0px",
         height: "0px",
-        display: "block",
+        display: "block"
       });
       selectableIcons.forEach((icon) => icon.classList.remove("selected"));
 
@@ -1523,7 +1526,7 @@ class DesktopOS {
           width: `${width}px`,
           height: `${height}px`,
           left: `${left}px`,
-          top: `${top}px`,
+          top: `${top}px`
         });
 
         const boxRect = this.selectionBox.getBoundingClientRect();
@@ -1579,7 +1582,7 @@ class DesktopOS {
       const now = new Date();
       document.getElementById("clock").textContent = now.toLocaleTimeString([], {
         hour: "2-digit",
-        minute: "2-digit",
+        minute: "2-digit"
       });
       document.getElementById("date").textContent = now.toLocaleDateString();
     };
@@ -1600,7 +1603,7 @@ const desktopOS = new DesktopOS();
 const wallpapers = [
   "/static/wallpapers/wallpaper1.webp",
   "/static/wallpapers/wallpaper2.webp",
-  "/static/wallpapers/wallpaper3.webp",
+  "/static/wallpapers/wallpaper3.webp"
 ];
 
 const randomWallpaper = wallpapers[Math.floor(Math.random() * wallpapers.length)];
