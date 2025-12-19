@@ -8,13 +8,13 @@
       body {
         background-color: black;
         color: white;
-        cursor: url("/icons/cursor.png");
+        cursor: url("/icons/cursor.png"), auto;
         display: flex;
         flex-direction: column;
         align-items: center;
         min-height: 100vh;
         margin: 0;
-        padding: 0;
+        font-family: sans-serif;
       }
 
       main {
@@ -22,43 +22,73 @@
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 50px;
-        padding-top: 50px;
+        gap: 40px;
+        padding: 50px 20px 0 20px;
+        text-align: center;
       }
 
-      h1 {
-        margin: 0;
+      h1,
+      h2 {
+        margin: 10px 0;
+      }
+
+      p {
+        margin: 10px 0;
       }
 
       a {
-        color: white;
+        color: rgb(116, 155, 218);
         text-decoration: none;
         margin: 5px 0;
         display: inline-block;
+        transition: color 0.3s;
+      }
+
+      a:hover {
+        color: #8e0522;
       }
 
       .projects {
         display: flex;
         flex-direction: column;
         align-items: center;
-      }
-
-      a {
-        margin: 10px 0;
-        color: rgb(116, 155, 218);
-      }
-      .projects a:hover {
-        color: #8e0522;
+        gap: 10px;
       }
 
       .images-row {
         display: flex;
         gap: 20px;
+        justify-content: center;
+      }
+      .images-row img,
+      main > img {
+        max-width: 400px;
       }
 
       .images-row img {
         max-width: 150px;
+        width: 100%;
         height: auto;
+        flex-shrink: 0;
+      }
+
+      .enter-desktop {
+        margin-top: 20px;
+        padding: 10px 20px;
+        font-size: 16px;
+        cursor: pointer;
+        background-color: #222;
+        color: white;
+        border: 1px solid white;
+        border-radius: 5px;
+        transition:
+          background-color 0.3s,
+          color 0.3s;
+      }
+
+      .enter-desktop:hover {
+        background-color: white;
+        color: black;
       }
 
       footer {
@@ -70,29 +100,18 @@
         max-width: 100px;
         height: auto;
       }
-
-      .enter-desktop {
-        margin-top: 30px;
-        padding: 10px 20px;
-        font-size: 16px;
-        cursor: pointer;
-        background-color: #222;
-        color: white;
-        border: 1px solid white;
-        border-radius: 5px;
-      }
     </style>
   </head>
   <body>
     <main>
       <h1>Reeyuki</h1>
-
+      <img src="/static/anime.webp" alt="Anime image" />
+      <p>Thanks for visiting my site!</p>
       <a href="/blog.html">My Blog</a>
-
       <button class="enter-desktop" onclick="window.location.href = '/desktop.html'">Enter Desktop</button>
 
       <div class="projects">
-        <h1>My Projects</h1>
+        <h2>My Projects</h2>
         <a href="https://liventcord.koyeb.app">Open Source Discord Alternative</a>
         <a href="https://github.com/Reeyuki">My Github</a>
       </div>
