@@ -399,8 +399,9 @@ class TerminalApp {
   }
 
   open() {
-    if (document.getElementById("terminal-win")) {
-      this.wm.bringToFront(document.getElementById("terminal-win"));
+    const existingWin = document.getElementById("terminal-win");
+    if (existingWin) {
+      this.wm.bringToFront(existingWin);
       return;
     }
 
@@ -417,7 +418,7 @@ class TerminalApp {
         </div>
       </div>
       <div class="window-content" style="background:#000; color:white; font-family:monospace; padding:10px; overflow-y:auto; height:calc(100% - 40px);">
-        <div id="terminal-output"></div>
+        <div id="terminal-output" style="white-space: pre;"></div>
         <div id="terminal-input-line" style="display:flex;">
           <span id="terminal-prompt"></span>
           <input type="text" id="terminal-input" style="flex:1; background:transparent; border:none; color:white; font-family:monospace; outline:none; margin-left:5px;" autocomplete="off">
@@ -437,7 +438,9 @@ class TerminalApp {
 
     this.updatePrompt();
     this.terminalInput.focus();
-    this.printWelcome();
+    this.print("Welcome to Reeyuki's silly terminal");
+    this.print("Type 'help' for available commands");
+    this.print("");
     this.setupEventHandlers();
   }
 
@@ -452,40 +455,32 @@ class TerminalApp {
           this.executeCommand(command);
         }
         this.terminalInput.value = "";
-      } else if (e.key === "ArrowUp") {
+      } else if (e.key === "ArrowUp" && this.historyIndex > 0) {
         e.preventDefault();
-        if (this.historyIndex > 0) {
-          this.historyIndex--;
-          this.terminalInput.value = this.history[this.historyIndex];
-        }
+        this.terminalInput.value = this.history[--this.historyIndex];
       } else if (e.key === "ArrowDown") {
         e.preventDefault();
-        if (this.historyIndex < this.history.length - 1) {
-          this.historyIndex++;
-          this.terminalInput.value = this.history[this.historyIndex];
-        } else {
-          this.historyIndex = this.history.length;
-          this.terminalInput.value = "";
-        }
+        this.historyIndex = Math.min(this.historyIndex + 1, this.history.length);
+        this.terminalInput.value = this.historyIndex < this.history.length ? this.history[this.historyIndex] : "";
       } else if (e.key === "Tab") {
         e.preventDefault();
         this.handleTabCompletion();
-      } else if (e.ctrlKey && e.key.toLowerCase() === "l") {
-        e.preventDefault();
-        this.cmdClear();
-      } else if (e.ctrlKey && e.key.toLowerCase() === "d") {
-        e.preventDefault();
-        const win = document.getElementById("terminal-win");
-        if (win) {
-          this.wm.removeFromTaskbar(win.id);
-          win.remove();
+      } else if (e.ctrlKey) {
+        if (e.key === "l") {
+          e.preventDefault();
+          this.cmdClear();
+        } else if (e.key === "d") {
+          e.preventDefault();
+          const win = document.getElementById("terminal-win");
+          if (win) {
+            this.wm.removeFromTaskbar(win.id);
+            win.remove();
+          }
+        } else if (e.key === "c") {
+          e.preventDefault();
+          this.print("^C", "white", true, this.terminalPrompt.textContent);
+          this.terminalInput.value = "";
         }
-      } else if (e.ctrlKey && e.key.toLowerCase() === "c") {
-        e.preventDefault();
-        const promptText = this.terminalPrompt.textContent;
-        const currentInput = this.terminalInput.value;
-        this.print("^C", "white", true, promptText);
-        this.terminalInput.value = "";
       }
     });
 
@@ -494,50 +489,40 @@ class TerminalApp {
     });
   }
 
-  printWelcome() {
-    this.print("Welcome to Reeyuki's silly terminal");
-    this.print("Type 'help' for available commands");
-    this.print("");
-  }
-
   updatePrompt() {
     const path = this.currentPath.length > 0 ? "/" + this.currentPath.join("/") : "/";
     this.terminalPrompt.textContent = `${this.username}@${this.hostname}:${path}$ `;
   }
 
-  print(text, color = null, isCommand = false, promptText = null) {
+  async print(text, color = null, isCommand = false, promptText = null, delay = 30) {
     const line = document.createElement("div");
+    const span = document.createElement("span");
 
     if (isCommand) {
       const prompt = document.createElement("span");
       prompt.textContent = promptText || this.terminalPrompt.textContent;
       prompt.style.color = "white";
       line.appendChild(prompt);
-
-      const cmd = document.createElement("span");
-      cmd.textContent = text;
-      line.appendChild(cmd);
+      line.appendChild(span);
     } else {
-      if (color) {
-        const span = document.createElement("span");
-        span.style.color = color;
-        span.textContent = text;
-        line.appendChild(span);
-      } else {
-        line.textContent = text;
-      }
+      if (color) span.style.color = color;
+      line.appendChild(span);
     }
 
     this.terminalOutput.appendChild(line);
-    this.terminalOutput.parentElement.scrollTop = this.terminalOutput.parentElement.scrollHeight;
+
+    for (let i = 0; i < text.length; i++) {
+      span.textContent += text[i];
+      await new Promise((resolve) => setTimeout(resolve, delay));
+      this.terminalOutput.parentElement.scrollTop = this.terminalOutput.parentElement.scrollHeight;
+    }
   }
+
   handleTabCompletion() {
     const input = this.terminalInput.value;
     const cursorPos = this.terminalInput.selectionStart;
-
     const left = input.slice(0, cursorPos);
     const right = input.slice(cursorPos);
-
     const match = left.match(/(\S+)$/);
     if (!match) return;
 
@@ -556,15 +541,14 @@ class TerminalApp {
 
     let folderContents;
     try {
-      const folder = this.fs.getFolder(pathParts);
-      folderContents = Object.keys(folder);
+      folderContents = Object.keys(this.fs.getFolder(pathParts));
     } catch {
       return;
     }
 
     const matches = folderContents.filter((item) => item.startsWith(baseName));
-
     if (matches.length === 0) return;
+
     if (matches.length === 1) {
       const completion = matches[0] + (this.fs.isFile(pathParts, matches[0]) ? "" : "/");
       this.terminalInput.value = leftBeforePartial + completion + right;
@@ -587,121 +571,42 @@ class TerminalApp {
     }
   }
 
-  cmdUname() {
-    this.print("Linux reeyuki-desktop 6.1.23-arch1-1 #1 SMP PREEMPT x86_64 GNU/Linux");
-  }
-
-  cmdNeofetch() {
-    const browserInfo = (() => {
-      const ua = navigator.userAgent;
-      if (/Firefox\/\d+/.test(ua)) return "Firefox";
-      if (/Chrome\/\d+/.test(ua) && !/Edg\/\d+/.test(ua)) return "Chrome";
-      if (/Edg\/\d+/.test(ua)) return "Edge";
-      if (/Safari\/\d+/.test(ua) && !/Chrome\/\d+/.test(ua)) return "Safari";
-      return "Unknown Browser";
-    })();
-
-    const cpuArch = navigator.platform || "Unknown";
-
-    const resolution = `${window.innerWidth}x${window.innerHeight}`;
-
-    const lines = [
-      `       .--.      ${this.username}@${this.hostname}`,
-      `     |o_o |     OS: Web Browser`,
-      `     |:_/ |     Browser: ${browserInfo}`,
-      `    //   \\ \\    `,
-      `   (|     | )   Architecture: ${cpuArch}`,
-      `  /'\\_   _/\\'\\  Resolution: ${resolution}`,
-      `  \\___)=(___/   DE: Web Desktop OS`,
-      `               `
-    ];
-
-    lines.forEach((line) => this.print(line, "cyan"));
-  }
-
-  async cmdPing(args) {
-    if (!args[0]) {
-      this.print("Usage: ping <host>");
-      return;
-    }
-
-    let host = args[0];
-    if (!host.startsWith("http://") && !host.startsWith("https://")) {
-      host = "https://" + host;
-    }
-
-    this.print(`PING ${args[0]} ...`);
-    const start = performance.now();
-
-    try {
-      await fetch(host, { method: "HEAD", mode: "no-cors" });
-      const end = performance.now();
-      const time = (end - start).toFixed(2);
-      this.print(`Reply from ${args[0]}: time=${time}ms`);
-    } catch {
-      this.print(`Ping request to ${args[0]} failed`);
-    }
-  }
-
-  async cmdCurl(args) {
-    if (!args[0]) {
-      this.print("Usage: curl <url>");
-      return;
-    }
-
-    const url = args[0];
-    try {
-      const res = await fetch(url);
-      const text = await res.text();
-      this.print(text.slice(0, 1000));
-    } catch {
-      this.print(`curl: (6) Could not resolve host: ${url}`);
-    }
-  }
-
-  cmdDate() {
-    this.print(new Date().toString());
-  }
-
-  cmdPs() {
-    const windows = Array.from(document.querySelectorAll(".window"));
-    if (windows.length === 0) {
-      this.print("  PID   TTY          TIME CMD");
-      this.print("  1     pts/0        0:00 idle");
-      return;
-    }
-    this.print("  PID   TTY          TIME CMD");
-    windows.forEach((win, i) => {
-      const cmd = win.querySelector(".window-header span")?.textContent || "unknown";
-      this.print(`  ${1000 + i}  pts/0      0:00 ${cmd}`);
-    });
-  }
-
   executeCommand(commandStr) {
-    const promptText = this.terminalPrompt.textContent;
-    this.print(commandStr, null, true, promptText);
-
-    const parts = commandStr.trim().split(/\s+/);
-    const command = parts[0];
-    const args = parts.slice(1);
+    this.print(commandStr, null, true, this.terminalPrompt.textContent);
+    const [command, ...args] = commandStr.trim().split(/\s+/);
 
     const commands = {
       help: () => this.cmdHelp(),
       clear: () => this.cmdClear(),
       ls: () => this.cmdLs(args),
-      pwd: () => this.cmdPwd(),
+      pwd: () => this.print(this.currentPath.length > 0 ? "/" + this.currentPath.join("/") : "/"),
       cd: () => this.cmdCd(args),
-      mkdir: () => this.cmdMkdir(args),
-      touch: () => this.cmdTouch(args),
-      rm: () => this.cmdRm(args),
+      mkdir: () =>
+        this.cmdFileOp(
+          args,
+          "mkdir",
+          "missing operand",
+          () => this.fs.createFolder(this.currentPath, args[0]),
+          "Created directory"
+        ),
+      touch: () =>
+        this.cmdFileOp(
+          args,
+          "touch",
+          "missing file operand",
+          () => this.fs.createFile(this.currentPath, args[0], ""),
+          "Created file"
+        ),
+      rm: () =>
+        this.cmdFileOp(args, "rm", "missing operand", () => this.fs.deleteItem(this.currentPath, args[0]), "Removed"),
       cat: () => this.cmdCat(args),
-      echo: () => this.cmdEcho(args),
-      whoami: () => this.cmdWhoami(),
-      hostname: () => this.cmdHostname(),
-      date: () => this.cmdDate(),
-      history: () => this.cmdHistory(),
+      echo: () => this.print(args.join(" ")),
+      whoami: () => this.print(this.username),
+      hostname: () => this.print(this.hostname),
+      date: () => this.print(new Date().toString()),
+      history: () => this.history.forEach((cmd, i) => this.print(`  ${i + 1}  ${cmd}`)),
       tree: () => this.cmdTree(),
-      uname: () => this.cmdUname(),
+      uname: () => this.print("Linux reeyuki-desktop 6.1.23-arch1-1 #1 SMP PREEMPT x86_64 GNU/Linux"),
       neofetch: () => this.cmdNeofetch(),
       ping: () => this.cmdPing(args),
       curl: () => this.cmdCurl(args),
@@ -713,27 +618,29 @@ class TerminalApp {
     } else if (command) {
       this.print(`bash: ${command}: command not found`);
     }
-
     this.updatePrompt();
   }
 
   cmdHelp() {
+    const cmds = [
+      ["help", "Show this help message"],
+      ["clear", "Clear the terminal screen"],
+      ["ls", "List directory contents"],
+      ["pwd", "Print working directory"],
+      ["cd [dir]", "Change directory"],
+      ["mkdir", "Create a new directory"],
+      ["touch", "Create a new file"],
+      ["rm", "Remove file or directory"],
+      ["cat", "Display file contents"],
+      ["echo", "Display a line of text"],
+      ["whoami", "Display current user"],
+      ["hostname", "Display hostname"],
+      ["date", "Display current date and time"],
+      ["history", "Show command history"],
+      ["tree", "Display directory tree"]
+    ];
     this.print("Available commands:");
-    this.print("  help      - Show this help message");
-    this.print("  clear     - Clear the terminal screen");
-    this.print("  ls        - List directory contents");
-    this.print("  pwd       - Print working directory");
-    this.print("  cd [dir]  - Change directory");
-    this.print("  mkdir     - Create a new directory");
-    this.print("  touch     - Create a new file");
-    this.print("  rm        - Remove file or directory");
-    this.print("  cat       - Display file contents");
-    this.print("  echo      - Display a line of text");
-    this.print("  whoami    - Display current user");
-    this.print("  hostname  - Display hostname");
-    this.print("  date      - Display current date and time");
-    this.print("  history   - Show command history");
-    this.print("  tree      - Display directory tree");
+    cmds.forEach(([cmd, desc]) => this.print(`  ${cmd.padEnd(10)} - ${desc}`));
   }
 
   cmdClear() {
@@ -743,29 +650,16 @@ class TerminalApp {
   cmdLs(args) {
     try {
       const path = args.length > 0 ? this.resolvePath(args[0]) : this.currentPath;
-      const folder = this.fs.getFolder(path);
-      const items = Object.keys(folder);
-
+      const items = Object.keys(this.fs.getFolder(path));
       if (items.length === 0) return;
 
-      const dirs = [];
-      const files = [];
-
       items.forEach((item) => {
-        if (this.fs.isFile(path, item)) files.push(item);
-        else dirs.push(item);
+        const isFile = this.fs.isFile(path, item);
+        this.print(item + (isFile ? "" : "/"), isFile ? null : "blue");
       });
-
-      dirs.forEach((dir) => this.print(dir + "/", "blue"));
-      files.forEach((file) => this.print(file));
-    } catch (error) {
+    } catch {
       this.print(`ls: cannot access '${args[0]}': No such file or directory`);
     }
-  }
-
-  cmdPwd() {
-    const path = this.currentPath.length > 0 ? "/" + this.currentPath.join("/") : "/";
-    this.print(path);
   }
 
   cmdCd(args) {
@@ -775,78 +669,37 @@ class TerminalApp {
     }
 
     const target = args[0];
-
-    if (target === "..") {
-      if (this.currentPath.length > 0) {
-        this.currentPath.pop();
-      }
-      return;
-    }
-
-    if (target === "/") {
+    if (target === ".." && this.currentPath.length > 0) {
+      this.currentPath.pop();
+    } else if (target === "/") {
       this.currentPath = [];
-      return;
-    }
-
-    if (target === "~") {
+    } else if (target === "~") {
       this.currentPath = ["home", this.username];
-      return;
-    }
-
-    try {
-      const newPath = this.resolvePath(target);
-      const folder = this.fs.getFolder(newPath);
-
-      if (typeof folder !== "object" || folder === null) {
-        this.print(`cd: ${target}: Not a directory`);
-        return;
+    } else {
+      try {
+        const newPath = this.resolvePath(target);
+        const folder = this.fs.getFolder(newPath);
+        if (typeof folder !== "object" || folder === null) {
+          this.print(`cd: ${target}: Not a directory`);
+          return;
+        }
+        this.currentPath = newPath;
+      } catch {
+        this.print(`cd: ${target}: No such file or directory`);
       }
-
-      this.currentPath = newPath;
-    } catch (error) {
-      this.print(`cd: ${target}: No such file or directory`);
     }
   }
 
-  cmdMkdir(args) {
+  cmdFileOp(args, cmd, errMsg, operation, successMsg) {
     if (args.length === 0) {
-      this.print("mkdir: missing operand");
+      this.print(`${cmd}: ${errMsg}`);
       return;
     }
-
     try {
-      this.fs.createFolder(this.currentPath, args[0]);
-      this.print(`Created directory: ${args[0]}`);
+      operation();
+      this.print(`${successMsg}: ${args[0]}`);
     } catch (error) {
-      this.print(`mkdir: cannot create directory '${args[0]}': ${error.message}`);
-    }
-  }
-
-  cmdTouch(args) {
-    if (args.length === 0) {
-      this.print("touch: missing file operand");
-      return;
-    }
-
-    try {
-      this.fs.createFile(this.currentPath, args[0], "");
-      this.print(`Created file: ${args[0]}`);
-    } catch (error) {
-      this.print(`touch: cannot create file '${args[0]}': ${error.message}`);
-    }
-  }
-
-  cmdRm(args) {
-    if (args.length === 0) {
-      this.print("rm: missing operand");
-      return;
-    }
-
-    try {
-      this.fs.deleteItem(this.currentPath, args[0]);
-      this.print(`Removed: ${args[0]}`);
-    } catch (error) {
-      this.print(`rm: cannot remove '${args[0]}': ${error.message}`);
+      this.print(`${cmd}: cannot process '${args[0]}': ${error.message}`);
     }
   }
 
@@ -855,86 +708,136 @@ class TerminalApp {
       this.print("cat: missing file operand");
       return;
     }
-
     try {
-      const fileName = args[0];
-      if (!this.fs.isFile(this.currentPath, fileName)) {
-        this.print(`cat: ${fileName}: Is a directory`);
+      if (!this.fs.isFile(this.currentPath, args[0])) {
+        this.print(`cat: ${args[0]}: Is a directory`);
         return;
       }
-
-      const content = this.fs.getFileContent(this.currentPath, fileName);
-      this.print(content || "(empty file)");
-    } catch (error) {
+      this.print(this.fs.getFileContent(this.currentPath, args[0]) || "(empty file)");
+    } catch {
       this.print(`cat: ${args[0]}: No such file or directory`);
     }
   }
 
-  cmdEcho(args) {
-    this.print(args.join(" "));
+  cmdNeofetch() {
+    const ua = navigator.userAgent;
+    const platform = navigator.platform || "Unknown";
+
+    const browser = /Firefox\/\d+/.test(ua)
+      ? "Firefox"
+      : /Edg\/\d+/.test(ua)
+        ? "Edge"
+        : /Chrome\/\d+/.test(ua) && !/Edg\/\d+/.test(ua)
+          ? "Chrome"
+          : /Safari\/\d+/.test(ua) && !/Chrome\/\d+/.test(ua)
+            ? "Safari"
+            : "Unknown Browser";
+
+    const cores = navigator.hardwareConcurrency || "Unknown";
+    const memoryGB = navigator.deviceMemory || "Unknown";
+
+    let gpu = "Unknown";
+    try {
+      const canvas = document.createElement("canvas");
+      const gl = canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
+      if (gl) {
+        const debugInfo = gl.getExtension("WEBGL_debug_renderer_info");
+        if (debugInfo) {
+          gpu = gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL);
+        } else {
+          gpu = gl.getParameter(gl.RENDERER);
+        }
+      }
+    } catch (e) {
+      gpu = "Unknown";
+    }
+
+    const lines = [
+      `       .--.      ${this.username}@${this.hostname}`,
+      `     |o_o |     OS: Arch Linux`,
+      `     |:_/ |     Browser: ${browser}`,
+      `    //   \\ \\   CPU Cores: ${cores}`,
+      `   (|     | )  Architecture: ${platform}`,
+      `  /'\\_   _/\\'\\ RAM: ${memoryGB} GB`,
+      `  \\___)=(___/   GPU: ${gpu}`,
+      `                Resolution: ${window.innerWidth}x${window.innerHeight}`,
+      `                DE: KDE Plasma`
+    ];
+
+    lines.forEach((line) => this.print(line, "cyan"));
   }
 
-  cmdWhoami() {
-    this.print(this.username);
+  async cmdPing(args) {
+    if (args.length === 0) {
+      this.print("Usage: ping <host>");
+      return;
+    }
+    const host = args[0].startsWith("http") ? args[0] : "https://" + args[0];
+    this.print(`PING ${args[0]} ...`);
+    const start = performance.now();
+    try {
+      await fetch(host, { method: "HEAD", mode: "no-cors" });
+      this.print(`Reply from ${args[0]}: time=${(performance.now() - start).toFixed(2)}ms`);
+    } catch {
+      this.print(`Ping request to ${args[0]} failed`);
+    }
   }
 
-  cmdHostname() {
-    this.print(this.hostname);
+  async cmdCurl(args) {
+    if (args.length === 0) {
+      this.print("Usage: curl <url>");
+      return;
+    }
+    try {
+      const text = await (await fetch(args[0])).text();
+      this.print(text.slice(0, 1000));
+    } catch {
+      this.print(`curl: (6) Could not resolve host: ${args[0]}`);
+    }
   }
 
-  cmdDate() {
-    this.print(new Date().toString());
-  }
-
-  cmdHistory() {
-    this.history.forEach((cmd, index) => {
-      this.print(`  ${index + 1}  ${cmd}`);
-    });
+  cmdPs() {
+    const windows = Array.from(document.querySelectorAll(".window"));
+    this.print("  PID   TTY          TIME CMD");
+    if (windows.length === 0) {
+      this.print("  1     pts/0        0:00 idle");
+    } else {
+      windows.forEach((win, i) => {
+        const cmd = win.querySelector(".window-header span")?.textContent || "unknown";
+        this.print(`  ${1000 + i}  pts/0      0:00 ${cmd}`);
+      });
+    }
   }
 
   cmdTree(path = this.currentPath, prefix = "", isLast = true) {
     if (prefix === "") {
-      const currentPathStr = path.length > 0 ? "/" + path.join("/") : "/";
-      this.print(currentPathStr);
+      this.print(path.length > 0 ? "/" + path.join("/") : "/");
     }
-
     try {
-      const folder = this.fs.getFolder(path);
-      const items = Object.keys(folder);
-
+      const items = Object.keys(this.fs.getFolder(path));
       items.forEach((item, index) => {
         const isLastItem = index === items.length - 1;
-        const connector = isLastItem ? "└── " : "├── ";
         const isFile = this.fs.isFile(path, item);
-
-        this.print(prefix + connector + item + (isFile ? "" : "/"));
-
+        this.print(prefix + (isLastItem ? "└── " : "├── ") + item + (isFile ? "" : "/"));
         if (!isFile) {
-          const newPrefix = prefix + (isLastItem ? "    " : "│   ");
-          this.cmdTree([...path, item], newPrefix, isLastItem);
+          this.cmdTree([...path, item], prefix + (isLastItem ? "    " : "│   "), isLastItem);
         }
       });
-    } catch (error) {
+    } catch {
       this.print(`tree: error reading directory`);
     }
   }
 
   resolvePath(pathStr) {
-    if (pathStr.startsWith("/")) {
-      return pathStr.split("/").filter((p) => p);
-    }
-
-    const parts = pathStr.split("/").filter((p) => p);
+    if (pathStr.startsWith("/")) return pathStr.split("/").filter((p) => p);
     const resolved = [...this.currentPath];
-
-    parts.forEach((part) => {
-      if (part === "..") {
-        resolved.pop();
-      } else if (part !== ".") {
-        resolved.push(part);
-      }
-    });
-
+    pathStr
+      .split("/")
+      .filter((p) => p)
+      .forEach((part) => {
+        if (part === "..") resolved.pop();
+        else if (part !== ".") resolved.push(part);
+      });
     return resolved;
   }
 }
