@@ -6,15 +6,8 @@ from urllib.parse import urlparse
 from time import sleep
 
 app = Flask(__name__)
-
-def get_origin():
-    return request.headers.get('Origin')
-
-CORS(
-    app,
-    origins=get_origin,
-    supports_credentials=True
-)
+origins  = "*"
+CORS(app, origins=origins, supports_credentials=True)
 
 MAX_RETRIES = 3
 TIMEOUT = 10
@@ -54,11 +47,11 @@ def fetch_file():
 
     try:
         response = send_file(save_path, as_attachment=True)
-        response.headers.add("Access-Control-Allow-Origin", "http://localhost:3000")
+        response.headers.add("Access-Control-Allow-Origin", origins)
         return response
     except Exception as e:
         return abort(500, description=f"Error serving file: {str(e)}")
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(port=8000,debug=True)
