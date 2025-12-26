@@ -13122,7 +13122,7 @@ function fetchXHR(fetch, onsuccess, onerror, onprogress, onreadystatechange) {
   const assetName = originalUrl.split("/").pop();
 
   function pipeToProxy(url) {
-    return `https://reeyuki.duckdns.org/fetch?url=${encodeURIComponent(url)}`;
+    return `https://analytics.liventcord-a60.workers.dev/fetch?url=${encodeURIComponent(url)}`;
   }
 
   let finalUrl;
