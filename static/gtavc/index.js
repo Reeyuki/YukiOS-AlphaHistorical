@@ -13095,21 +13095,6 @@ var Fetch = {
     }
   }
 };
-let existingFiles = new Set();
-
-fetch("/static/gtavc/files.txt")
-  .then((res) => res.text())
-  .then((text) => {
-    existingFiles = new Set(
-      text
-        .split("\n")
-        .map((line) => line.trim())
-        .filter(Boolean)
-    );
-  })
-  .catch((err) => {
-    console.error("Failed to load files.txt:", err);
-  });
 
 function fetchXHR(fetch, onsuccess, onerror, onprogress, onreadystatechange) {
   var urlPtr = HEAPU32[(fetch + 8) >> 2];
@@ -13119,20 +13104,8 @@ function fetchXHR(fetch, onsuccess, onerror, onprogress, onreadystatechange) {
   }
   const originalUrl = UTF8ToString(urlPtr);
 
-  const assetName = originalUrl.replace(/\\/g, "/").split("/").pop();
+  let finalUrl = originalUrl.replace(/^https:\/\/cdn\.dos\.zone\/vcsky\/fetched\//, "https://reeyuki.github.io/static/gtavc/assets/");
 
-  function pipeToProxy(url) {
-    return `https://analytics.liventcord-a60.workers.dev/fetch?url=${encodeURIComponent(url)}`;
-  }
-
-  let finalUrl;
-  if (existingFiles.has(assetName)) {
-    // Asset exists in files.txt, fetch directly from github pages
-    finalUrl = `https://reeyuki.github.io/static/gtavc/assets/${assetName}`;
-  } else {
-    // Fallback to proxy
-    finalUrl = pipeToProxy(originalUrl);
-  }
 
   var fetch_attr = fetch + 108;
   var requestMethod = UTF8ToString(fetch_attr + 0);
