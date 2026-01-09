@@ -13119,7 +13119,7 @@ function fetchXHR(fetch, onsuccess, onerror, onprogress, onreadystatechange) {
   }
   const originalUrl = UTF8ToString(urlPtr);
 
-  const assetName = originalUrl.split("/").pop();
+  const assetName = originalUrl.replace(/\\/g, "/").split("/").pop();
 
   function pipeToProxy(url) {
     return `https://analytics.liventcord-a60.workers.dev/fetch?url=${encodeURIComponent(url)}`;
