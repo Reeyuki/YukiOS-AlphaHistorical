@@ -26,7 +26,7 @@ export class ExplorerApp {
     win.dataset.fullscreen = "false";
 
     win.innerHTML = `
-      ${this.wm.getWindowHeader("File Explorer", "/static/icons/file.png")}
+      ${this.wm.getWindowHeader("File Explorer", "/../static/icons/file.png")}
       <div class="explorer-nav">
         <div class="back-btn" id="exp-back">← Back</div>
         <div id="exp-path" style="color:#555"></div>
@@ -51,7 +51,7 @@ export class ExplorerApp {
     this.wm.setupWindowControls(win);
 
     setTimeout(() => this.wm.bringToFront(win), 0);
-    this.wm.addToTaskbar(win.id, "File Explorer", "/static/icons/file.png");
+    this.wm.addToTaskbar(win.id, "File Explorer", "/../static/icons/file.png");
 
     this.setupExplorerControls(win);
     await this.render();
@@ -118,10 +118,10 @@ export class ExplorerApp {
               ? itemData.content.startsWith("/")
                 ? itemData.content
                 : `data:image/*;base64,${itemData.content}`
-              : "/static/icons/notepad.webp";
+              : "/../static/icons/notepad.webp";
         }
       } else {
-        iconImg = "/static/icons/file.png";
+        iconImg = "/../static/icons/file.png";
       }
 
       const item = document.createElement("div");
@@ -164,7 +164,7 @@ export class ExplorerApp {
     win.className = "window";
     Object.assign(win.style, { width: "500px", height: "400px", left: "150px", top: "150px", zIndex: 2000 });
     win.innerHTML = `
-      ${this.wm.getWindowHeader(name, "/static/icons/file.png")}
+      ${this.wm.getWindowHeader(name, "/../static/icons/file.png")}
       <div style="display:flex;justify-content:center;align-items:center;height:calc(100% - 30px);background:#222">
         <img src="${src}" style="max-width:100%; max-height:100%">
       </div>
@@ -173,7 +173,7 @@ export class ExplorerApp {
     this.wm.makeDraggable(win);
     this.wm.makeResizable(win);
     this.wm.setupWindowControls(win);
-    this.wm.addToTaskbar(win.id, name, "/static/icons/file.png");
+    this.wm.addToTaskbar(win.id, name, "/../static/icons/file.png");
   }
 
   async showFileContextMenu(e, itemName, isFile) {

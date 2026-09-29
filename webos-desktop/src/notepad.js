@@ -18,7 +18,7 @@ export class NotepadApp {
     Object.assign(win.style, { left: "250px", top: "150px" });
 
     win.innerHTML = `
-      ${this.wm.getWindowHeader(`${title} - Notepad`, "/static/icons/notepad.webp")}
+      ${this.wm.getWindowHeader(`${title} - Notepad`, "/../static/icons/notepad.webp")}
       <div class="notepad-menu">
         <button class="notepad-btn" data-action="save">Save</button>
         <button class="notepad-btn" data-action="saveAs">Save As</button>
@@ -33,7 +33,7 @@ export class NotepadApp {
     this.wm.makeDraggable(win);
     this.wm.makeResizable(win);
     this.wm.setupWindowControls(win);
-    this.wm.addToTaskbar(win.id, `${title} - Notepad`, "/static/icons/music.png");
+    this.wm.addToTaskbar(win.id, `${title} - Notepad`, "/../static/icons/music.png");
 
     this.setupNotepadControls(win, title, filePath);
   }

@@ -106,7 +106,7 @@ export class EmojiApp {
     Object.assign(win.style, { left: "350px", top: "120px" });
 
     win.innerHTML = `
-      ${this.wm.getWindowHeader("Emoji", "/static/icons/emoji.svg")}
+      ${this.wm.getWindowHeader("Emoji", "/../static/icons/emoji.svg")}
       <div class="window-content">
         <div class="emoji-selector-container">
           <div id="emoji-mart-container" class="emoji-mart-container"></div>
@@ -118,7 +118,7 @@ export class EmojiApp {
     this.wm.makeDraggable(win);
     this.wm.makeResizable(win);
     this.wm.setupWindowControls(win);
-    this.wm.addToTaskbar(win.id, "Emoji", "/static/icons/emoji.svg");
+    this.wm.addToTaskbar(win.id, "Emoji", "/../static/icons/emoji.svg");
 
     this.initEmojiSelector(win);
   }

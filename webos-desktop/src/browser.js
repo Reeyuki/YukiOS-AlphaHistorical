@@ -18,7 +18,7 @@ export class BrowserApp {
     win.dataset.fullscreen = "false";
 
     win.innerHTML = `
-      ${this.wm.getWindowHeader("Browser", "/static/icons/chromium.webp")}
+      ${this.wm.getWindowHeader("Browser", "/../static/icons/chromium.webp")}
       <nav class="browser-nav">
         <div>
           <button id="back-btn" disabled aria-label="Click to go back" title="Click to go back">
@@ -49,7 +49,7 @@ export class BrowserApp {
     this.wm.makeDraggable(win);
     this.wm.makeResizable(win);
     this.wm.setupWindowControls(win);
-    this.wm.addToTaskbar(win.id, "Browser", "/static/icons/chromium.webp");
+    this.wm.addToTaskbar(win.id, "Browser", "/../static/icons/chromium.webp");
 
     win.querySelector(".close-btn").onclick = () => win.remove();
 

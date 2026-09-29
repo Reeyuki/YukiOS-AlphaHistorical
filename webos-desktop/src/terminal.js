@@ -146,7 +146,7 @@ export class TerminalApp {
     Object.assign(win.style, { left: "200px", top: "100px" });
 
     win.innerHTML = `
-      ${this.wm.getWindowHeader("Terminal", "/static/icons/terminal.png")}
+      ${this.wm.getWindowHeader("Terminal", "/../static/icons/terminal.png")}
       <div class="window-content" style="background:#000; color:white; font-family:monospace; padding:10px; overflow-y:auto; height:calc(100% - 40px);">
         <div id="terminal-output" style="white-space: pre;"></div>
         <div id="terminal-input-line" style="display:flex;">
@@ -160,7 +160,7 @@ export class TerminalApp {
     this.wm.makeDraggable(win);
     this.wm.makeResizable(win);
     this.wm.setupWindowControls(win);
-    this.wm.addToTaskbar(win.id, "Terminal", "/static/icons/terminal.png");
+    this.wm.addToTaskbar(win.id, "Terminal", "/../static/icons/terminal.png");
 
     this.terminalOutput = win.querySelector("#terminal-output");
     this.terminalInput = win.querySelector("#terminal-input");

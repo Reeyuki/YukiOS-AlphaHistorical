@@ -21,7 +21,7 @@ export class CameraApp {
     win.dataset.fullscreen = "false";
 
     win.innerHTML = `
-      ${this.wm.getWindowHeader("Camera", "/static/icons/camera.svg")}
+      ${this.wm.getWindowHeader("Camera", "/../static/icons/camera.svg")}
       <div style="padding:10px; display:flex; flex-direction:column; align-items:center; position:relative;">
         <div style="position:relative; width:100%; max-width:600px;">
           <video id="camera-video" autoplay playsinline style="width:100%; border:1px solid #ccc; border-radius:8px;"></video>
@@ -42,7 +42,7 @@ export class CameraApp {
     this.wm.makeDraggable(win);
     this.wm.makeResizable(win);
     this.wm.setupWindowControls(win);
-    this.wm.addToTaskbar(win.id, "Camera", "/static/icons/camera.svg");
+    this.wm.addToTaskbar(win.id, "Camera", "/../static/icons/camera.svg");
 
     win.querySelector(".close-btn").onclick = () => {
       this.stopCamera();
@@ -163,7 +163,7 @@ export class CameraApp {
     this.historyWin.id = "history-win";
 
     this.historyWin.innerHTML = `
-      ${this.wm.getWindowHeader("Recordings History", "/static/icons/camera.svg")}
+      ${this.wm.getWindowHeader("Recordings History", "/../static/icons/camera.svg")}
       <div id="history-list" style="padding:10px; display:flex; flex-direction:column; gap:5px; overflow-y:auto; height:calc(100% - 30px);"></div>
     `;
 
@@ -207,7 +207,7 @@ export class CameraApp {
 
     playerWin.innerHTML = `
       <div class="window-header">
-        <span><img class="window-title-icon" src="/static/icons/camera.svg" alt="" />Playback</span>
+        <span><img class="window-title-icon" src="/../static/icons/camera.svg" alt="" />Playback</span>
         <div class="window-controls">
           <button class="close-btn" title="Close"><svg viewBox="0 0 10 10" xmlns="http://www.w3.org/2000/svg"><path d="M10.2.7L9.5 0 5.1 4.4.7 0 0 .7l4.4 4.4L0 9.5l.7.7 4.4-4.4 4.4 4.4.7-.7-4.4-4.4z"></path></svg></button>
         </div>

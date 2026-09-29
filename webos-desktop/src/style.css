@@ -11,7 +11,7 @@ body {
   height: 100%;
   width: 100%;
   min-height: 100%;
-  cursor: url("/static/icons/cursor.png"), auto;
+  cursor: url("../../static/icons/cursor.png"), auto;
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -375,7 +375,7 @@ body {
 #start-button {
   width: 50px;
   height: 40px;
-  background: url("/static/icons/liventcord.webp") no-repeat center;
+  background: url("../../static/icons/liventcord.webp") no-repeat center;
   background-size: 35px;
   cursor: pointer;
   transition: filter 0.2s;

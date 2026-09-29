@@ -36,7 +36,7 @@ class MusicPlayer {
     const win = windowManager.createWindow("music-win", "MUSIC");
 
     win.innerHTML = `
-    ${windowManager.getWindowHeader("MUSIC", "/static/icons/music.png")}
+    ${windowManager.getWindowHeader("MUSIC", "/../static/icons/music.png")}
     <div class="window-content" style="width:100%; height:100%;">
       <div id="player-container" style="display:flex; flex-direction:column; align-items:center; gap:10px; padding:10px;"></div>
       </div>
@@ -47,7 +47,7 @@ class MusicPlayer {
     windowManager.makeDraggable(win);
     windowManager.makeResizable(win);
     windowManager.setupWindowControls(win);
-    windowManager.addToTaskbar(win.id, "MUSIC", "/static/icons/music.png");
+    windowManager.addToTaskbar(win.id, "MUSIC", "/../static/icons/music.png");
   }
 }
 
