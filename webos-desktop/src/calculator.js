@@ -29,7 +29,7 @@ export class CalculatorApp {
     this.win = win;
     this.reset();
     win.innerHTML = `
-      ${this.wm.getWindowHeader("Calculator", "/../static/icons/calculator.svg")}
+      ${this.wm.getWindowHeader("Calculator", "../static/icons/calculator.svg")}
       <div class="window-content">
         <div class="calc-body">
           <div class="calc-history" id="calc-history"></div>
@@ -66,7 +66,7 @@ export class CalculatorApp {
     this.wm.makeDraggable(win);
     this.wm.makeResizable(win);
     this.wm.setupWindowControls(win);
-    this.wm.addToTaskbar(win.id, "Calculator", "/../static/icons/calculator.svg");
+    this.wm.addToTaskbar(win.id, "Calculator", "../static/icons/calculator.svg");
 
     this.bindCalculatorEvents(win);
 

@@ -19,69 +19,69 @@ export const defaultStorage = {
           type: "file",
           content: "Files you saved in notepad get saved in your browser session.",
           kind: FileKind.TEXT,
-          icon: "/../static/icons/notepad.webp"
+          icon: "../static/icons/notepad.webp"
         }
       },
       Pictures: {
         "wallpaper1.webp": {
           type: "file",
-          content: "/../static/wallpapers/wallpaper1.webp",
+          content: "../static/wallpapers/wallpaper1.webp",
           kind: FileKind.IMAGE,
-          icon: "/../static/wallpapers/wallpaper1.webp"
+          icon: "../static/wallpapers/wallpaper1.webp"
         },
         "wallpaper2.webp": {
           type: "file",
-          content: "/../static/wallpapers/wallpaper2.webp",
+          content: "../static/wallpapers/wallpaper2.webp",
           kind: FileKind.IMAGE,
-          icon: "/../static/wallpapers/wallpaper2.webp"
+          icon: "../static/wallpapers/wallpaper2.webp"
         },
         "wallpaper3.webp": {
           type: "file",
-          content: "/../static/wallpapers/wallpaper3.webp",
+          content: "../static/wallpapers/wallpaper3.webp",
           kind: FileKind.IMAGE,
-          icon: "/../static/wallpapers/wallpaper3.webp"
+          icon: "../static/wallpapers/wallpaper3.webp"
         },
         "wallpaper4.webp": {
           type: "file",
-          content: "/../static/wallpapers/wallpaper4.webp",
+          content: "../static/wallpapers/wallpaper4.webp",
           kind: FileKind.IMAGE,
-          icon: "/../static/wallpapers/wallpaper4.webp"
+          icon: "../static/wallpapers/wallpaper4.webp"
         },
         "wallpaper5.webp": {
           type: "file",
-          content: "/../static/wallpapers/wallpaper5.webp",
+          content: "../static/wallpapers/wallpaper5.webp",
           kind: FileKind.IMAGE,
-          icon: "/../static/wallpapers/wallpaper5.webp"
+          icon: "../static/wallpapers/wallpaper5.webp"
         },
         "wallpaper6.webp": {
           type: "file",
-          content: "/../static/wallpapers/wallpaper6.webp",
+          content: "../static/wallpapers/wallpaper6.webp",
           kind: FileKind.IMAGE,
-          icon: "/../static/wallpapers/wallpaper6.webp"
+          icon: "../static/wallpapers/wallpaper6.webp"
         },
         "wallpaper7.webp": {
           type: "file",
-          content: "/../static/wallpapers/wallpaper7.webp",
+          content: "../static/wallpapers/wallpaper7.webp",
           kind: FileKind.IMAGE,
-          icon: "/../static/wallpapers/wallpaper7.webp"
+          icon: "../static/wallpapers/wallpaper7.webp"
         },
         "wallpaper8.webp": {
           type: "file",
-          content: "/../static/wallpapers/wallpaper8.webp",
+          content: "../static/wallpapers/wallpaper8.webp",
           kind: FileKind.IMAGE,
-          icon: "/../static/wallpapers/wallpaper8.webp"
+          icon: "../static/wallpapers/wallpaper8.webp"
         },
         "wallpaper9.webp": {
           type: "file",
-          content: "/../static/wallpapers/wallpaper9.webp",
+          content: "../static/wallpapers/wallpaper9.webp",
           kind: FileKind.IMAGE,
-          icon: "/../static/wallpapers/wallpaper9.webp"
+          icon: "../static/wallpapers/wallpaper9.webp"
         },
         "wallpaper10.webp": {
           type: "file",
-          content: "/../static/wallpapers/wallpaper10.webp",
+          content: "../static/wallpapers/wallpaper10.webp",
           kind: FileKind.IMAGE,
-          icon: "/../static/wallpapers/wallpaper10.webp"
+          icon: "../static/wallpapers/wallpaper10.webp"
         }
       },
       Music: {}
@@ -156,8 +156,7 @@ export class FileSystemManager {
     await this.fsReady;
     const folder = this.getFolder(path);
     const fileKind = kind || this.inferKind(name);
-    const fileIcon =
-      icon || (fileKind === FileKind.TEXT ? "/../static/icons/notepad.webp" : "/../static/icons/file.png");
+    const fileIcon = icon || (fileKind === FileKind.TEXT ? "../static/icons/notepad.webp" : "../static/icons/file.png");
     folder[name] = { type: "file", content, kind: fileKind, icon: fileIcon };
     await this.saveToStorage();
   }
@@ -190,7 +189,7 @@ export class FileSystemManager {
     if (folder[name]?.type === "file") folder[name].content = content;
     else {
       const kind = this.inferKind(name);
-      const icon = kind === FileKind.TEXT ? "/../static/icons/notepad.webp" : "/../static/icons/file.png";
+      const icon = kind === FileKind.TEXT ? "../static/icons/notepad.webp" : "../static/icons/file.png";
       folder[name] = { type: "file", content, kind, icon };
     }
     await this.saveToStorage();

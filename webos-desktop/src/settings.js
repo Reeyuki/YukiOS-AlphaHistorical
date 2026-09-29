@@ -215,7 +215,7 @@ export class SettingsApp {
     ).join("");
 
     win.innerHTML = `
-      ${this.wm.getWindowHeader("Settings", "/../static/icons/settings.svg")}
+      ${this.wm.getWindowHeader("Settings", "../static/icons/settings.svg")}
       <div class="window-content">
         <div class="yuki-settings-layout">
           <div class="yuki-settings-sidebar">
@@ -241,7 +241,7 @@ export class SettingsApp {
     this.wm.makeDraggable(win);
     this.wm.makeResizable(win);
     this.wm.setupWindowControls(win);
-    this.wm.addToTaskbar(win.id, "Settings", "/../static/icons/settings.svg");
+    this.wm.addToTaskbar(win.id, "Settings", "../static/icons/settings.svg");
 
     win.querySelectorAll(".yuki-settings-nav li").forEach((navItem) => {
       navItem.onclick = () => {
