@@ -26,10 +26,7 @@ export class ExplorerApp {
     win.dataset.fullscreen = "false";
 
     win.innerHTML = `
-      <div class="window-header">
-        <span>File Explorer</span>
-        ${this.wm.getWindowControls()}
-      </div>
+      ${this.wm.getWindowHeader("File Explorer", "/static/icons/file.png")}
       <div class="explorer-nav">
         <div class="back-btn" id="exp-back">← Back</div>
         <div id="exp-path" style="color:#555"></div>
@@ -167,10 +164,7 @@ export class ExplorerApp {
     win.className = "window";
     Object.assign(win.style, { width: "500px", height: "400px", left: "150px", top: "150px", zIndex: 2000 });
     win.innerHTML = `
-      <div class="window-header">
-        <span>${name}</span>
-        ${this.wm.getWindowControls()}
-      </div>
+      ${this.wm.getWindowHeader(name, "/static/icons/file.png")}
       <div style="display:flex;justify-content:center;align-items:center;height:calc(100% - 30px);background:#222">
         <img src="${src}" style="max-width:100%; max-height:100%">
       </div>

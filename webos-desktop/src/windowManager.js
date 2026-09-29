@@ -1,3 +1,5 @@
+import { isEdgeSnapEnabled, isTransparencyEnabled } from "./settings.js";
+
 const styleEl = document.getElementById("window-style");
 let styleParent = styleEl.parentNode;
 
@@ -20,7 +22,9 @@ export class WindowManager {
     this.gameWindowCount = 0;
   }
   updateTransparency() {
-    if (this.gameWindowCount > 0) {
+    if (!isTransparencyEnabled()) {
+      hideTransparency();
+    } else if (this.gameWindowCount > 0) {
       hideTransparency();
     } else {
       restoreTransparency();
@@ -149,10 +153,7 @@ export class WindowManager {
         const propsWin = this.createWindow(`${winId}-props`, `Properties: ${appInfo.title}`, "40vw", "40vh");
 
         propsWin.innerHTML = `
-          <div class="window-header">
-            <span>Properties: ${appInfo.title}</span>
-            ${this.wm.getWindowControls()}
-          </div>
+          ${this.wm.getWindowHeader(`Properties: ${appInfo.title}`)}
           <div class="window-content" style="width:100%; height:100%; overflow:auto; user-select:text;">
             ${contentHtml}
           </div>
@@ -286,6 +287,7 @@ export class WindowManager {
     };
     win.querySelector(".minimize-btn").onclick = () => this.minimizeWindow(win);
     win.querySelector(".maximize-btn").onclick = () => this.toggleFullscreen(win);
+    win.querySelector(".download-btn").onclick = () => this.downloadWindowContent(win);
     const closeBtn = win.querySelector(".close-btn");
     if (closeBtn) this.registerCloseWindow(closeBtn);
     win.addEventListener("mousedown", () => this.bringToFront(win));
@@ -294,15 +296,118 @@ export class WindowManager {
   makeDraggable(win) {
     const header = win.querySelector(".window-header");
     header.onmousedown = (e) => {
-      if (e.target.tagName === "BUTTON") return;
+      if (e.target.closest("button")) return;
+      if (win.dataset.snapped) this.unsnapWindow(win);
       const ox = e.clientX - win.offsetLeft;
       const oy = e.clientY - win.offsetTop;
       document.onmousemove = (e) => {
         win.style.left = `${e.clientX - ox}px`;
         win.style.top = `${e.clientY - oy}px`;
+        if (isEdgeSnapEnabled()) this.updateSnapPreview(win, e.clientX, e.clientY);
       };
-      document.onmouseup = () => (document.onmousemove = null);
+      document.onmouseup = (e) => {
+        document.onmousemove = null;
+        if (isEdgeSnapEnabled()) {
+          this.applySnap(win, e.clientX, e.clientY);
+        } else {
+          const ghost = document.getElementById("snap-preview");
+          if (ghost) ghost.style.display = "none";
+          win.dataset.snapZone = "";
+        }
+      };
     };
+  }
+
+  getWorkArea() {
+    const taskbarH = document.getElementById("taskbar")?.offsetHeight || 40;
+    return { width: window.innerWidth, height: window.innerHeight - taskbarH };
+  }
+
+  getSnapZone(x, y) {
+    const edge = 12;
+    if (y <= edge) return "top";
+    if (x <= edge) return "left";
+    if (x >= window.innerWidth - edge) return "right";
+    return null;
+  }
+
+  getSnapRect(zone) {
+    const area = this.getWorkArea();
+    if (zone === "left") {
+      return { left: 0, top: 0, width: Math.floor(area.width / 2), height: area.height };
+    }
+    if (zone === "right") {
+      return { left: Math.ceil(area.width / 2), top: 0, width: Math.floor(area.width / 2), height: area.height };
+    }
+    return { left: 0, top: 0, width: area.width, height: area.height };
+  }
+
+  getSnapPreviewEl() {
+    let ghost = document.getElementById("snap-preview");
+    if (!ghost) {
+      ghost = document.createElement("div");
+      ghost.id = "snap-preview";
+      document.body.appendChild(ghost);
+    }
+    return ghost;
+  }
+
+  updateSnapPreview(win, x, y) {
+    const ghost = this.getSnapPreviewEl();
+    const zone = this.getSnapZone(x, y);
+    if (!zone) {
+      ghost.style.display = "none";
+      win.dataset.snapZone = "";
+      return;
+    }
+    const rect = this.getSnapRect(zone);
+    Object.assign(ghost.style, {
+      display: "block",
+      left: `${rect.left}px`,
+      top: `${rect.top}px`,
+      width: `${rect.width}px`,
+      height: `${rect.height}px`
+    });
+    win.dataset.snapZone = zone;
+  }
+
+  applySnap(win, x, y) {
+    const ghost = document.getElementById("snap-preview");
+    if (ghost) ghost.style.display = "none";
+    const zone = win.dataset.snapZone;
+    win.dataset.snapZone = "";
+    if (!zone) return;
+
+    if (!win.dataset.snapped) {
+      win.dataset.snapPrevWidth = win.style.width;
+      win.dataset.snapPrevHeight = win.style.height;
+      win.dataset.snapPrevLeft = win.style.left;
+      win.dataset.snapPrevTop = win.style.top;
+    }
+    const rect = this.getSnapRect(zone);
+    Object.assign(win.style, {
+      left: `${rect.left}px`,
+      top: `${rect.top}px`,
+      width: `${rect.width}px`,
+      height: `${rect.height}px`
+    });
+    win.dataset.snapped = zone;
+  }
+
+  unsnapWindow(win) {
+    if (win.dataset.snapPrevWidth) {
+      Object.assign(win.style, {
+        width: win.dataset.snapPrevWidth,
+        height: win.dataset.snapPrevHeight,
+        left: win.dataset.snapPrevLeft,
+        top: win.dataset.snapPrevTop
+      });
+    }
+    delete win.dataset.snapped;
+    delete win.dataset.snapPrevWidth;
+    delete win.dataset.snapPrevHeight;
+    delete win.dataset.snapPrevLeft;
+    delete win.dataset.snapPrevTop;
   }
 
   makeResizable(win) {
@@ -386,11 +491,51 @@ export class WindowManager {
   }
   getWindowControls() {
     return `<div class="window-controls">
-              <button class="minimize-btn" title="Minimize">−</button>
-              <button class="maximize-btn" title="Maximize">□</button>
-              <button class="close-btn" title="Close">X</button>
-            </div>
+      <button class="minimize-btn" title="Minimize"><svg viewBox="0 0 10 1" xmlns="http://www.w3.org/2000/svg"><path d="M0 0h10v1H0z"></path></svg></button>
+      <button class="download-btn" title="Download">
+        <svg viewBox="0 0 10 10" xmlns="http://www.w3.org/2000/svg"><path d="M5 7L1.5 3.5h2V0h3v3.5h2L5 7zM0 9h10v1H0z"></path></svg>
+      </button>
+      <button class="maximize-btn" title="Maximize"><svg viewBox="0 0 10 10" xmlns="http://www.w3.org/2000/svg"><path d="M0 0v10h10V0H0zm1 1h8v8H1V1z"></path></svg></button>
+      <button class="close-btn" title="Close"><svg viewBox="0 0 10 10" xmlns="http://www.w3.org/2000/svg"><path d="M10.2.7L9.5 0 5.1 4.4.7 0 0 .7l4.4 4.4L0 9.5l.7.7 4.4-4.4 4.4 4.4.7-.7-4.4-4.4z"></path></svg></button>
+    </div>
     `;
+  }
+
+  getWindowHeader(title, iconUrl, extraControls = "") {
+    const icon = iconUrl
+      ? `<img class="window-title-icon" src="${iconUrl}" alt="" />`
+      : `<i class="fas fa-desktop" style="color:white;margin-right:6px;font-size:30px;vertical-align:middle;"></i>`;
+    return `<div class="window-header">
+        <span>${icon}${title}</span>
+        <div class="window-controls">
+          <button class="minimize-btn" title="Minimize"><svg viewBox="0 0 10 1" xmlns="http://www.w3.org/2000/svg"><path d="M0 0h10v1H0z"></path></svg></button>
+          ${extraControls}
+          <button class="download-btn" title="Download">
+            <svg viewBox="0 0 10 10" xmlns="http://www.w3.org/2000/svg"><path d="M5 7L1.5 3.5h2V0h3v3.5h2L5 7zM0 9h10v1H0z"></path></svg>
+          </button>
+          <button class="maximize-btn" title="Maximize"><svg viewBox="0 0 10 10" xmlns="http://www.w3.org/2000/svg"><path d="M0 0v10h10V0H0zm1 1h8v8H1V1z"></path></svg></button>
+          <button class="close-btn" title="Close"><svg viewBox="0 0 10 10" xmlns="http://www.w3.org/2000/svg"><path d="M10.2.7L9.5 0 5.1 4.4.7 0 0 .7l4.4 4.4L0 9.5l.7.7 4.4-4.4 4.4 4.4.7-.7-4.4-4.4z"></path></svg></button>
+        </div>
+      </div>
+    `;
+  }
+
+  downloadWindowContent(win) {
+    const title = win.querySelector(".window-header > span")?.textContent?.trim() || win.id || "window";
+    const content = win.querySelector(".window-content")?.innerHTML || "";
+    const blob = new Blob(
+      [`<!doctype html><html><head><meta charset="utf-8"><title>${title}</title></head><body>${content}</body></html>`],
+      { type: "text/html" }
+    );
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `${title.replace(/[^\w\-]+/g, "_")}.html`;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => {
+      URL.revokeObjectURL(a.href);
+      a.remove();
+    }, 1000);
   }
 
   showPopup(text) {

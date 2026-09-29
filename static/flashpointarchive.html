@@ -7,6 +7,24 @@
     <script src="/static/games/flashpointarchive/main.js" defer></script>
   </head>
   <body>
+    <button id="fullscreenBtn" style="position:fixed;top:10px;right:10px;z-index:99999;background:rgba(0,0,0,0.6);color:#fff;border:1px solid #fff;border-radius:4px;padding:6px 12px;cursor:pointer;font-size:14px;">⛶ Fullscreen</button>
+    <script>
+      document.getElementById("fullscreenBtn").addEventListener("click", () => {
+        const doc = document;
+        const docEl = doc.documentElement;
+        if (!doc.fullscreenElement && !doc.webkitFullscreenElement && !doc.mozFullScreenElement && !doc.msFullscreenElement) {
+          if (docEl.requestFullscreen) docEl.requestFullscreen();
+          else if (docEl.webkitRequestFullscreen) docEl.webkitRequestFullscreen();
+          else if (docEl.mozRequestFullScreen) docEl.mozRequestFullScreen();
+          else if (docEl.msRequestFullscreen) docEl.msRequestFullscreen();
+        } else {
+          if (doc.exitFullscreen) doc.exitFullscreen();
+          else if (doc.webkitExitFullscreen) doc.webkitExitFullscreen();
+          else if (doc.mozCancelFullScreen) doc.mozCancelFullScreen();
+          else if (doc.msExitFullscreen) doc.msExitFullscreen();
+        }
+      });
+    </script>
     <div class="content">
       <div class="header"></div>
       <div class="player"></div>

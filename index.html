@@ -171,9 +171,8 @@
       <nav>
         <h2>Navigation</h2>
         <ul>
-          <li><a href="https://reeyuki.github.io/desktop/" target="_blank" rel="noopener">Enter Desktop</a></li>
+          <li><a href="desktop/">Enter Desktop</a></li>
           <li><a href="/blog.html">My Blog</a></li>
-          <li><a href="https://reeyuki.github.io/game.html" target="_blank" rel="noopener">Play Prospector Game</a></li>
           <li><a href="/gallery.html">Rickroll</a></li>
         </ul>
       </nav>
@@ -194,7 +193,6 @@
         <ul>
           <li><a href="https://reeyuki.github.io" target="_blank" rel="noopener">GitHub Pages</a></li>
           <li><a href="https://reeyuki.neocities.org" target="_blank" rel="noopener">Neocities Site</a></li>
-          <li><a href="https://reeyuki.nekoweb.org" target="_blank" rel="noopener">NekoWeb Site</a></li>
         </ul>
       </section>
 
@@ -208,6 +206,18 @@
             </a>
           </li>
         </ul>
+      </section>
+
+      <section>
+        <h2>Guestbook <span id="gb-count" style="font-size: 0.6rem; color: rgb(116, 155, 218); opacity: 0.8;"></span></h2>
+        <p>leave something nice. i read them all.</p>
+        <iframe
+          src="https://reeyuki.netlify.app/comments.html"
+          id="gb-iframe"
+          style="width: 100%; max-width: 500px; height: 400px; border: none; overflow: hidden; display: block; margin: 0 auto; background: transparent;"
+          loading="lazy"
+          title="Guestbook"
+        ></iframe>
       </section>
     </main>
 
@@ -223,5 +233,29 @@
       <img src="/static/javascriptfreepage.gif" alt="JavaScript-free badge" />
       <img src="/static/keepwebfree.gif" alt="Keep web free badge" />
     </footer>
+    <script>
+      window.addEventListener("message", function (e) {
+        if (e.data && e.data.type === "resize" && e.data.height) {
+          var iframe = document.getElementById("gb-iframe");
+          if (iframe && e.source === iframe.contentWindow) {
+            iframe.style.height = e.data.height + "px";
+          }
+        }
+      });
+      (function () {
+        fetch("https://reeyuki.netlify.app/api/guestbook?page=1&limit=1")
+          .then(function (r) {
+            return r.json();
+          })
+          .then(function (d) {
+            var total = d.total !== undefined ? d.total : d.messages ? d.messages.length : 0;
+            if (total > 0) {
+              var countEl = document.getElementById("gb-count");
+              if (countEl) countEl.textContent = "(" + total + ")";
+            }
+          })
+          .catch(function () {});
+      })();
+    </script>
   </body>
 </html>

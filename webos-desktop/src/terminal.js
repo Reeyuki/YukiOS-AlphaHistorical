@@ -146,14 +146,7 @@ export class TerminalApp {
     Object.assign(win.style, { left: "200px", top: "100px" });
 
     win.innerHTML = `
-      <div class="window-header">
-        <span>Terminal</span>
-        <div class="window-controls">
-          <button class="minimize-btn" title="Minimize">−</button>
-          <button class="maximize-btn" title="Maximize">□</button>
-          <button class="close-btn" title="Close">X</button>
-        </div>
-      </div>
+      ${this.wm.getWindowHeader("Terminal", "/static/icons/terminal.png")}
       <div class="window-content" style="background:#000; color:white; font-family:monospace; padding:10px; overflow-y:auto; height:calc(100% - 40px);">
         <div id="terminal-output" style="white-space: pre;"></div>
         <div id="terminal-input-line" style="display:flex;">

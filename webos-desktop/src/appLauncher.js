@@ -1,4 +1,6 @@
 import { populateStartMenu, tryGetIcon } from "./startMenu";
+import reeyukiSiteHtml from "./reeyukiSite.html?raw";
+import { applyRuffleConfig, getFlag, FLAG_ANALYTICS } from "./settings.js";
 
 export class AppLauncher {
   constructor(
@@ -9,7 +11,10 @@ export class AppLauncher {
     terminalApp,
     notepadApp,
     browserApp,
-    cameraApp
+    cameraApp,
+    calculatorApp,
+    emojiApp,
+    settingsApp
   ) {
     this.wm = windowManager;
     this.fs = fileSystemManager;
@@ -19,6 +24,9 @@ export class AppLauncher {
     this.notepadApp = notepadApp;
     this.browserApp = browserApp;
     this.cameraApp = cameraApp;
+    this.calculatorApp = calculatorApp;
+    this.emojiApp = emojiApp;
+    this.settingsApp = settingsApp;
     this.pageLoadTime = Date.now();
     this.TRANSPARENCY_ALLOWED_APP_IDS = new Set(["paint", "vscode", "liventcord"]);
     const analyticsBase = this._getAnalyticsBase("hit-page");
@@ -32,6 +40,9 @@ export class AppLauncher {
       notepad: { type: "system", action: () => this.notepadApp.open() },
       browser: { type: "system", action: () => this.browserApp.open() },
       cameraApp: { type: "system", action: () => this.cameraApp.open() },
+      calculator: { type: "system", action: () => this.calculatorApp.open() },
+      emoji: { type: "system", action: () => this.emojiApp.open() },
+      settings: { type: "system", action: () => this.settingsApp.open() },
       music: { type: "system", action: () => this.musicPlayer.open(this.wm) },
       photopea: { type: "game", url: "https://www.photopea.com" },
       sonic: { type: "swf", swf: "/static/games/swfGames/sonic.swf" },
@@ -131,6 +142,29 @@ export class AppLauncher {
       epicbossfighter2: { type: "swf", swf: "/static/games/swfGames/EpicBossFighter2.swf" },
       avatarFortressFight2: { type: "swf", swf: "/static/games/swfGames/avatarFortressFight2.swf" },
       incredibles: { type: "swf", swf: "/static/games/swfGames/incredibles.swf" },
+      gunMayhem: { type: "swf", swf: "/static/games/swfGames/gunmayhem.swf" },
+      gunMayhem2: { type: "swf", swf: "/static/games/swfGames/gunmayhem2.swf" },
+      zuma: { type: "swf", swf: "/static/games/swfGames/zuma.swf" },
+      badIceCream: { type: "swf", swf: "/static/games/badIceCream/bic1.swf" },
+      earnToDie: { type: "swf", swf: "/static/games/swfGames/earntodie.swf" },
+      earnToDie2012: { type: "swf", swf: "/static/games/swfGames/earn-to-die-2012.swf" },
+      earnToDie2012part2: { type: "swf", swf: "/static/games/swfGames/earntodie2012-part2.swf" },
+      earnToDieExodus: { type: "swf", swf: "/static/games/swfGames/earntodie2-exodus.swf" },
+      bobTheRobber: { type: "swf", swf: "/static/games/swfGames/bob1.swf" },
+      transmorpher2: { type: "swf", swf: "/static/games/swfGames/transmorpher2.swf" },
+      transmorpher3: { type: "swf", swf: "/static/games/swfGames/transmorpher3.swf" },
+      tankTrouble: { type: "swf", swf: "/static/games/swfGames/tankTrouble.swf" },
+      alienHominid: { type: "swf", swf: "/static/games/swfGames/alienHominid.swf" },
+      dadnme: { type: "swf", swf: "/static/games/swfGames/dadnme.swf" },
+      theVisitor: { type: "swf", swf: "/static/games/swfGames/theVisitor.swf" },
+      jumpingFinn: { type: "swf", swf: "/static/games/swfGames/jumpingFinn.swf" },
+      savagePursuit: { type: "swf", swf: "/static/games/swfGames/savagepursuit.swf" },
+      canary: { type: "swf", swf: "/static/games/swfGames/canary.swf" },
+      smashComputer: { type: "swf", swf: "/static/games/swfGames/smashComputer.swf" },
+      wizardHult: { type: "swf", swf: "/static/games/swfGames/wizard-hult.swf" },
+      slimeLabs: { type: "swf", swf: "/static/games/swfGames/slimelab.swf" },
+      angryBirdsHalloween: { type: "swf", swf: "/static/games/swfGames/angry-birds-hd-halloween.swf" },
+      angryBirdsOnline: { type: "swf", swf: "/static/games/swfGames/angrybirdsonline.swf" },
       cactusMcCoy: { type: "game", url: "https://papasgamesfree.io/cactus-mccoy-1" },
       jackSmith: { type: "game", url: "https://papasgamesfree.io/jacksmith" },
       pokemonRed: { type: "gba", url: "pokemon-red.gba" },
@@ -140,8 +174,12 @@ export class AppLauncher {
       pokemonWhite: { type: "nds", url: "pokemon-white.nds" },
       pokemonWhite2: { type: "nds", url: "pokemon-white-2.zip" },
       minecraft: { type: "remote", url: "https://eaglercraft.com/play" },
-      liventcord: { type: "game", url: "https://liventcord.github.io" },
+      reeyukiSite: { type: "html", html: reeyukiSiteHtml },
       fnaf: { type: "game", url: "/static/games/fnaf" },
+      fnaf4Halloween: { type: "game", url: "/static/games/fnaf/4h.html" },
+      fnafSl: { type: "game", url: "/static/games/fnaf/sl.html" },
+      fnafPs: { type: "game", url: "/static/games/fnaf/ps.html" },
+      fnafUcn: { type: "game", url: "/static/games/fnaf/ucn.html" },
       geometryDash: { type: "game", url: "https://emupedia.net/emupedia-game-geometry-dash" },
       cutTheRope: { type: "game", url: "https://emupedia.net/emupedia-game-cut-the-rope2" },
       game2048: { type: "game", url: "https://emupedia.net/emupedia-game-2048" },
@@ -150,28 +188,21 @@ export class AppLauncher {
       jetpack: { type: "game", url: "https://emupedia.net/emupedia-game-jetpack-joyride" },
       happyWheels: { type: "game", url: "https://emupedia.net/emupedia-game-happy-wheels/flash" },
       fistPunch: { type: "game", url: "/static/flashpointarchive.html?fpGameName=fistPunch" },
-      hollowKnight: { type: "game", url: "/static/hollowknight.html" },
+      angryGranToss: { type: "game", url: "/static/flashpointarchive.html?fpGameName=angryGranToss" },
+      breakTheWorm: { type: "game", url: "/static/flashpointarchive.html?fpGameName=breakTheWorm" },
+      commandoAssault: { type: "game", url: "/static/flashpointarchive.html?fpGameName=commandoAssault" },
+      rotate: { type: "game", url: "/static/games/rotate/" },
+      deltarune: { type: "game", url: "/static/games/html/deltarunefull.html" },
+      angryBirdsSpace: { type: "game", url: "/static/games/html/angryBirdsSpace.html" },
+
       slimeRancher: { type: "game", url: "https://dev.snubby.top" },
-      kindergarten: {
-        type: "game",
-        url: "https://truffled.lol/games/kindergarten/1/index.html"
-      },
-      kindergarten2: {
-        type: "game",
-        url: "https://truffled.lol/games/kindergarten/2/index.html"
-      },
       cuphead: { type: "game", url: "https://truffled.lol/games/Cuphead/index.html" },
       raft: { type: "game", url: "https://truffled.lol/games/raft/index.html" },
       celeste: { type: "game", url: "https://truffled.lol/games/celeste/index.html" },
-      terraria: {
-        type: "game",
-        url: "https://truffled.lol/games/terraria/terraria-wrapper.html"
-      },
-      yandereSim: { type: "game", url: "https://truffled.lol/gamefile/yandere.html" },
-      undertale: { type: "game", url: "https://truffled.lol/games/bts" },
+      undertale: { type: "game", url: "/static/games/html/undertale.html" },
+      plagueInc: { type: "game", url: "/static/games/html/plague.html" },
       balatro: { type: "game", url: "https://truffled.lol/games/balatro/index.html" },
-      granny: { type: "game", url: "https://truffled.lol/gamefile/Granny.html" },
-      bendy: { type: "game", url: "https://truffled.lol/games/BATIM/BATIM/index.html" }
+      granny: { type: "game", url: "https://truffled.lol/gamefile/Granny.html" }
     };
 
     populateStartMenu(this);
@@ -240,6 +271,7 @@ export class AppLauncher {
 
   sendAnalytics(data) {
     if (window.location.hostname === "localhost") return;
+    if (!getFlag(FLAG_ANALYTICS, true)) return;
     fetch("https://analytics.liventcord-a60.workers.dev/analytics", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -272,18 +304,45 @@ export class AppLauncher {
       return;
     }
 
-    this.createWindow(
-      appName,
-      appName.replace(/([A-Z])/g, " $1").replace(/^./, (str) => str.toUpperCase()),
-      htmlContent,
-      null,
-      appName,
-      appMeta
-    );
+    const foundName = document.querySelector(`[data-app="${appName}"] div`);
+    const title = foundName
+      ? foundName.textContent
+      : appName.replace(/([A-Z])/g, " $1").replace(/^./, (str) => str.toUpperCase());
+    this.createWindow(appName, title, htmlContent, null, appName, appMeta);
+
+    // <script> tags in inlined HTML don't execute, so wire guestbook extras manually
+    const win = document.getElementById(`${appName}-win`);
+    const gbIframe = win?.querySelector("#gb-iframe");
+    if (gbIframe) {
+      if (!window.__gbResizeWired) {
+        window.__gbResizeWired = true;
+        window.addEventListener("message", (e) => {
+          if (e.data && e.data.type === "resize" && e.data.height) {
+            document.querySelectorAll("#gb-iframe").forEach((frame) => {
+              if (e.source === frame.contentWindow) {
+                frame.style.height = e.data.height + "px";
+              }
+            });
+          }
+        });
+      }
+      fetch("https://reeyuki.netlify.app/api/guestbook?page=1&limit=1")
+        .then((r) => r.json())
+        .then((d) => {
+          const total = d.total !== undefined ? d.total : d.messages ? d.messages.length : 0;
+          if (total > 0) {
+            const countEl = win.querySelector("#gb-count");
+            if (countEl) countEl.textContent = "(" + total + ")";
+          }
+        })
+        .catch(() => {});
+    }
   }
 
   openRuffleApp(gameName, swfPath) {
     if (!swfPath) return;
+
+    applyRuffleConfig();
 
     const foundName = document.querySelector(`[data-app="${gameName}"] div`);
     if (foundName) gameName = foundName.textContent;
@@ -353,15 +412,7 @@ export class AppLauncher {
     console.log(`Id: ${id}, ${appId}, appMeta ${appMeta.toString()}, title: ${title}`);
 
     win.innerHTML = `
-      <div class="window-header">
-        <span>${title}</span>
-        <div class="window-controls">
-          <button class="minimize-btn" title="Minimize">−</button>
-          ${externalUrl ? `<button class="external-btn" title="Open in External">↗</button>` : ""}
-          <button class="maximize-btn" title="Maximize">□</button>
-          <button class="close-btn" title="Close">X</button>
-        </div>
-      </div>
+      ${this.wm.getWindowHeader(title, tryGetIcon(appId), externalUrl ? `<button class="external-btn" title="Open in External">↗</button>` : "")}
       <div class="window-content" style="width:100%; height:100%;">
         ${contentHtml}
       </div>

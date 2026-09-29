@@ -18,14 +18,7 @@ export class BrowserApp {
     win.dataset.fullscreen = "false";
 
     win.innerHTML = `
-      <div class="window-header">
-        <span>Browser</span>
-        <div class="window-controls">
-          <button class="minimize-btn" title="Minimize">−</button>
-          <button class="maximize-btn" title="Maximize">□</button>
-          <button class="close-btn" title="Close">X</button>
-        </div>
-      </div>
+      ${this.wm.getWindowHeader("Browser", "/static/icons/chromium.webp")}
       <nav class="browser-nav">
         <div>
           <button id="back-btn" disabled aria-label="Click to go back" title="Click to go back">
@@ -43,14 +36,11 @@ export class BrowserApp {
       <nav class="bookmark-bar">
       <button data-url="https://www.google.com/webhp?igu=1">Google</button>
       <button data-url="https://reeyuki.github.io">Reeyuki Site</button>
-      <button data-url="https://liventcord.github.io">LiventCord</button>
       <button data-url="https://www.wikipedia.org">Wikipedia</button>
-      <button data-url="https://www.mixconvert.com">Mix Convert</button>
       <button data-url="https://dustinbrett.com/Program%20Files/Browser/dino/index.html">T-Rex Dino</button>
       <button onclick="window.open('https://dn721809.ca.archive.org/0/items/youtube-xvFZjo5PgG0/xvFZjo5PgG0.mp4','_blank')">Click me</button>
       <button data-url="https://bluemaxima.org/flashpoint">Flashpoint Archive</button>
       <button data-url="https://jsfiddle.net">JS Fiddle</button>
-      <a href="https://emupedia.net/beta/emuos/">EmuOS</a>
       </nav>
       <iframe id="browser-frame" src="${this.currentURL}" style="width:100%;height:calc(100% - 88px);border:none"></iframe>
     `;

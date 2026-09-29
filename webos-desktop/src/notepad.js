@@ -18,14 +18,7 @@ export class NotepadApp {
     Object.assign(win.style, { left: "250px", top: "150px" });
 
     win.innerHTML = `
-      <div class="window-header">
-        <span>${title} - Notepad</span>
-        <div class="window-controls">
-          <button class="minimize-btn" title="Minimize">−</button>
-          <button class="maximize-btn" title="Maximize">□</button>
-          <button class="close-btn" title="Close">X</button>
-        </div>
-      </div>
+      ${this.wm.getWindowHeader(`${title} - Notepad`, "/static/icons/notepad.webp")}
       <div class="notepad-menu">
         <button class="notepad-btn" data-action="save">Save</button>
         <button class="notepad-btn" data-action="saveAs">Save As</button>

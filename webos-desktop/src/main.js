@@ -5,8 +5,23 @@ import { BrowserApp } from "./browser.js";
 import { AppLauncher } from "./appLauncher.js";
 import { NotepadApp } from "./notepad.js";
 import { CameraApp } from "./camera.js";
+import { CalculatorApp } from "./calculator.js";
+import { EmojiApp } from "./emoji.js";
+import { toggleCalendarPopup } from "./calendar.js";
+import {
+  SettingsApp,
+  applyRuffleConfig,
+  applyHideIcons,
+  applyCustomCursor,
+  applyWindowOpacity,
+  applyStretchScroll,
+  setIconFilterAppMap,
+  getFlag,
+  FLAG_AUTOSTART,
+  FLAG_CYCLE_WALLPAPER
+} from "./settings.js";
 import { SystemUtilities } from "./system.js";
-import { FileSystemManager } from "./fs.js";
+import { FileSystemManager, defaultStorage } from "./fs.js";
 import { setupStartMenu, updateFavoritesUI } from "./startMenu.js";
 
 class MusicPlayer {
@@ -21,10 +36,7 @@ class MusicPlayer {
     const win = windowManager.createWindow("music-win", "MUSIC");
 
     win.innerHTML = `
-    <div class="window-header">
-      <span>MUSIC</span>
-      ${windowManager.getWindowControls()}
-    </div>
+    ${windowManager.getWindowHeader("MUSIC", "/static/icons/music.png")}
     <div class="window-content" style="width:100%; height:100%;">
       <div id="player-container" style="display:flex; flex-direction:column; align-items:center; gap:10px; padding:10px;"></div>
       </div>
@@ -80,6 +92,29 @@ class DesktopUI {
     this.setupIconHandlers();
     this.setupSelectionBox();
     this.setupStartMenu();
+    this.setupDesktopScroll();
+  }
+
+  setupDesktopScroll() {
+    // Plain mouse wheels only emit vertical deltas, which would do nothing on
+    // a horizontally-scrolling desktop. Translate them sideways, but only when
+    // there is no vertical room to scroll (never hijack real vertical scroll
+    // or pinch-zoom, and never interfere with windows above the desktop).
+    this.desktop.addEventListener(
+      "wheel",
+      (e) => {
+        if (e.ctrlKey || e.metaKey) return;
+        if (e.target !== this.desktop) return;
+        const canH = this.desktop.scrollWidth > this.desktop.clientWidth + 1;
+        if (!canH) return;
+        if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) return;
+        const canV = this.desktop.scrollHeight > this.desktop.clientHeight + 1;
+        if (canV) return;
+        this.desktop.scrollLeft += e.deltaY + e.deltaX;
+        e.preventDefault();
+      },
+      { passive: false }
+    );
   }
 
   setupIconHandlers() {
@@ -307,14 +342,7 @@ class DesktopUI {
     );
 
     propsWin.innerHTML = `
-        <div class="window-header">
-            <span>Properties: ${dataset.name || "Unknown"}</span>
-            <div class="window-controls">
-                <button class="minimize-btn" title="Minimize">−</button>
-                <button class="maximize-btn" title="Maximize">□</button>
-                <button class="close-btn" title="Close">X</button>
-            </div>
-        </div>
+        ${this.appLauncher.wm.getWindowHeader(`Properties: ${dataset.name || "Unknown"}`)}
         <div class="window-content" style="width:100%; height:100%; overflow:auto; user-select:text; padding:10px;">
             ${contentHtml}
         </div>
@@ -327,16 +355,32 @@ class DesktopUI {
   }
 
   showDesktopContextMenu(e) {
+    const isFullscreen = !!document.fullscreenElement;
     const menuItems = [
       `<div id="ctx-new-notepad">New Notepad</div>`,
-      `<div id="ctx-open-explorer">Open File Explorer</div>`
+      `<div id="ctx-open-explorer">Open File Explorer</div>`,
+      `<div id="ctx-open-terminal">Open Terminal</div>`
     ];
 
     if (this.clipboardCurrentCopied) {
       menuItems.push(`<div id="ctx-paste">Paste</div>`);
     }
 
-    menuItems.push(`<hr>`, `<div id="ctx-refresh">Refresh</div>`);
+    menuItems.push(
+      `<hr>`,
+      `<div class="ctx-submenu" id="ctx-sort">Sort icons <span class="submenu-arrow">▶</span>
+        <div class="ctx-flyout">
+          <div id="ctx-sort-name">By Name</div>
+          <div id="ctx-sort-restore">Restore order</div>
+        </div>
+      </div>`,
+      `<div class="ctx-submenu" id="ctx-background">Background <span class="submenu-arrow">▶</span>
+        <div class="ctx-flyout" id="ctx-wallpaper-list"></div>
+      </div>`,
+      `<div id="ctx-fullscreen">${isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}</div>`,
+      `<hr>`,
+      `<div id="ctx-refresh">Refresh</div>`
+    );
 
     this.contextMenu.innerHTML = menuItems.join("");
 
@@ -350,12 +394,38 @@ class DesktopUI {
       explorerApp.open();
     };
 
+    document.getElementById("ctx-open-terminal").onclick = () => {
+      this.contextMenu.style.display = "none";
+      terminalApp.open();
+    };
+
     if (this.clipboardCurrentCopied) {
       document.getElementById("ctx-paste").onclick = () => {
         this.pasteIcons(e.pageX, e.pageY);
         this.contextMenu.style.display = "none";
       };
     }
+
+    document.getElementById("ctx-sort-name").onclick = () => {
+      this.sortDesktopIconsByName();
+      this.contextMenu.style.display = "none";
+    };
+
+    document.getElementById("ctx-sort-restore").onclick = () => {
+      this.restoreDesktopIconOrder();
+      this.contextMenu.style.display = "none";
+    };
+
+    this.buildWallpaperList();
+
+    document.getElementById("ctx-fullscreen").onclick = () => {
+      this.contextMenu.style.display = "none";
+      if (document.fullscreenElement) {
+        document.exitFullscreen();
+      } else {
+        document.documentElement.requestFullscreen();
+      }
+    };
 
     document.getElementById("ctx-refresh").onclick = () => {
       this.contextMenu.style.display = "none";
@@ -367,6 +437,85 @@ class DesktopUI {
       top: `${e.pageY}px`,
       display: "block"
     });
+
+    this.contextMenu.querySelectorAll(".ctx-submenu").forEach((sub) => {
+      sub.addEventListener("mouseenter", () => {
+        const flyout = sub.querySelector(".ctx-flyout");
+        if (!flyout) return;
+        flyout.style.left = "100%";
+        flyout.style.right = "auto";
+        const rect = flyout.getBoundingClientRect();
+        if (rect.right > window.innerWidth) {
+          flyout.style.left = "auto";
+          flyout.style.right = "100%";
+        }
+      });
+    });
+  }
+
+  getDesktopIconLabel(icon) {
+    return icon.querySelector("div")?.textContent?.trim() || "";
+  }
+
+  snapshotDesktopIconOrder() {
+    if (!originalDesktopIconOrder) {
+      originalDesktopIconOrder = Array.from(desktop.querySelectorAll(".icon"));
+    }
+  }
+
+  reflowDesktopIcons() {
+    desktop.querySelectorAll(".icon").forEach((icon) => {
+      icon.style.left = "";
+      icon.style.top = "";
+    });
+    layoutIcons();
+  }
+
+  sortDesktopIconsByName() {
+    this.snapshotDesktopIconOrder();
+    const sorted = Array.from(desktop.querySelectorAll(".icon")).sort((a, b) =>
+      this.getDesktopIconLabel(a).localeCompare(this.getDesktopIconLabel(b))
+    );
+    sorted.forEach((icon) => desktop.appendChild(icon));
+    this.reflowDesktopIcons();
+  }
+
+  restoreDesktopIconOrder() {
+    this.snapshotDesktopIconOrder();
+    originalDesktopIconOrder.forEach((icon) => {
+      if (icon.isConnected) desktop.appendChild(icon);
+    });
+    this.reflowDesktopIcons();
+  }
+
+  buildWallpaperList() {
+    const list = document.getElementById("ctx-wallpaper-list");
+    if (!list) return;
+    list.innerHTML = "";
+
+    const pictures = defaultStorage.home.reeyuki.Pictures || {};
+    const currentSrc = document.getElementById("wallpaper-img")?.src || "";
+
+    Object.entries(pictures)
+      .filter(([, item]) => item.kind === "image")
+      .forEach(([name, item]) => {
+        const entry = document.createElement("div");
+        const isCurrent = currentSrc.endsWith(item.content);
+        entry.textContent = `${isCurrent ? "✓ " : ""}${name}`;
+        entry.onclick = () => {
+          SystemUtilities.setWallpaper(item.content);
+          this.contextMenu.style.display = "none";
+        };
+        list.appendChild(entry);
+      });
+
+    const randomEntry = document.createElement("div");
+    randomEntry.textContent = "Random wallpaper";
+    randomEntry.onclick = () => {
+      SystemUtilities.setRandomWallpaper();
+      this.contextMenu.style.display = "none";
+    };
+    list.appendChild(randomEntry);
   }
 
   pasteIcons(x, y) {
@@ -497,6 +646,9 @@ notepadApp.setExplorer(explorerApp);
 const terminalApp = new TerminalApp(fileSystemManager, windowManager);
 const musicPlayer = new MusicPlayer();
 const cameraApp = new CameraApp(windowManager);
+const calculatorApp = new CalculatorApp(windowManager);
+const emojiApp = new EmojiApp(windowManager);
+const settingsApp = new SettingsApp(windowManager);
 const appLauncher = new AppLauncher(
   windowManager,
   fileSystemManager,
@@ -505,12 +657,32 @@ const appLauncher = new AppLauncher(
   terminalApp,
   notepadApp,
   browserApp,
-  cameraApp
+  cameraApp,
+  calculatorApp,
+  emojiApp,
+  settingsApp
 );
+settingsApp.appLauncher = appLauncher;
+setIconFilterAppMap(appLauncher.appMap);
+applyRuffleConfig();
+applyHideIcons();
+applyCustomCursor();
+applyWindowOpacity();
+applyStretchScroll();
 const desktopUI = new DesktopUI(appLauncher);
+window.__appLauncher = appLauncher;
 
 SystemUtilities.startClock();
-SystemUtilities.setRandomWallpaper();
+if (getFlag(FLAG_CYCLE_WALLPAPER, true)) {
+  SystemUtilities.setRandomWallpaper();
+} else {
+  SystemUtilities.loadWallpaper();
+}
+
+document.getElementById("date")?.addEventListener("click", (e) => {
+  e.stopPropagation();
+  toggleCalendarPopup();
+});
 
 const queryString = window.location.search;
 const urlParams = new URLSearchParams(queryString);
@@ -520,11 +692,23 @@ if (game) {
   setTimeout(() => {
     appLauncher.launch(game);
   }, 100);
+} else {
+  let autostart = null;
+  try {
+    autostart = localStorage.getItem(FLAG_AUTOSTART) || null;
+  } catch {}
+  if (autostart && appLauncher.appMap[autostart]) {
+    setTimeout(() => {
+      appLauncher.launch(autostart);
+    }, 100);
+  }
 }
 
 const ICON_WIDTH = 80;
 const ICON_HEIGHT = 100;
 const GAP = 5;
+
+let originalDesktopIconOrder = null;
 
 const icons = desktop.querySelectorAll(".icon");
 
@@ -556,7 +740,4 @@ function layoutIcons() {
 window.addEventListener("load", layoutIcons);
 window.addEventListener("resize", layoutIcons);
 
-console.log(
-  "Howdy, devtools user! the source of this site is available at: https://github.com/Reeyuki/reeyuki.github.io"
-);
 setupStartMenu();

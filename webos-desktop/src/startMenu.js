@@ -113,12 +113,17 @@ function setupStars() {
 }
 
 export function setupStartMenu() {
-  document.querySelectorAll(".kde-cat").forEach((cat) => {
+  document.querySelectorAll(".start-cat").forEach((cat) => {
     cat.onclick = () => {
-      document.querySelectorAll(".kde-cat").forEach((c) => c.classList.remove("active"));
+      if (cat.dataset.launch) {
+        document.getElementById("start-menu").style.display = "none";
+        window.__appLauncher?.launch(cat.dataset.launch);
+        return;
+      }
+      document.querySelectorAll(".start-cat").forEach((c) => c.classList.remove("active"));
       document.querySelectorAll(".kde-page").forEach((p) => p.classList.remove("active"));
       cat.classList.add("active");
-      document.querySelector(`.kde-page[data-page="${cat.dataset.cat}"]`).classList.add("active");
+      document.querySelector(`.kde-page[data-page="${cat.dataset.cat}"]`)?.classList.add("active");
     };
   });
 
