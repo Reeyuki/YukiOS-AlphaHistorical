@@ -816,7 +816,7 @@ export class SettingsApp {
     pane.innerHTML = `
       <div class="settings-category-header">About</div>
       <div class="settings-row" style="flex-direction: column; align-items: flex-start; gap: 10px;">
-        <h2 style="margin:0;font-size:1.4em;"><a href="https://github.com/Reeyuki/YukiOS-EarlyAlphaPrehistoric" target="_blank" rel="noopener" style="color:inherit;">Yuki OS</a></h2>
+        <h2 style="margin:0;font-size:1.4em;"><a href="https://github.com/Reeyuki/YukiOS-AlphaHistorical/" target="_blank" rel="noopener" style="color:inherit;">Yuki OS</a></h2>
         <p style="margin:0;color:rgba(255,255,255,0.8);font-size:0.95em;">
           Retro browser desktop with apps, Flash games, and emulators.
         </p>
@@ -833,7 +833,7 @@ export class SettingsApp {
           <span class="settings-label-title">Source code</span>
           <span class="settings-label-desc">github.com/Reeyuki/YukiOS-EarlyAlphaPrehistoric</span>
         </div>
-        <a href="https://github.com/Reeyuki/YukiOS-EarlyAlphaPrehistoric" target="_blank" rel="noopener" class="settings-btn" style="text-decoration:none;">GitHub</a>
+        <a href="https://github.com/Reeyuki/YukiOS-AlphaHistorical/" target="_blank" rel="noopener" class="settings-btn" style="text-decoration:none;">GitHub</a>
       </div>`;
 
     if (navigator.storage?.estimate) {
